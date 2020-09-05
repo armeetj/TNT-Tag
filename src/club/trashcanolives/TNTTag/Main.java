@@ -22,6 +22,9 @@ public class Main extends JavaPlugin
     @Override
     public void onEnable()
     {
+        loadConfig();
+        instanceClasses();
+        getServer().getPluginManager().registerEvents(new GameMechanics(), this);
         getServer().getConsoleSender().sendMessage("§c§lT§f§lN§c§lT Tag §a§lEnabled!");
     }
 
@@ -29,6 +32,12 @@ public class Main extends JavaPlugin
     public void onDisable()
     {
         getServer().getConsoleSender().sendMessage("§c§lT§f§lN§c§lT Tag §c§lDisabled!");
+    }
+
+    public void loadConfig()
+    {
+        getConfig().options().copyDefaults(true);
+        saveConfig();
     }
 
     public void instanceClasses()

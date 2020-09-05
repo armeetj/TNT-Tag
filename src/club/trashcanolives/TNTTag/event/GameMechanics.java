@@ -2,17 +2,26 @@ package club.trashcanolives.TNTTag.event;
 
 import club.trashcanolives.TNTTag.Main;
 import club.trashcanolives.TNTTag.player.PlayerManager;
+import club.trashcanolives.TNTTag.player.PlayerScoreboard;
 import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDamageByBlockEvent;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.util.concurrent.ThreadLocalRandom;
 
 public class GameMechanics implements Listener
 {
@@ -33,6 +42,7 @@ public class GameMechanics implements Listener
             plugin.playerManager.put(player.getUniqueId(), new PlayerManager(player.getUniqueId(), false, 0, false, false));
             plugin.playersInGame.add(player);
             plugin.gameManager.lobbyWait(player);
+            PlayerScoreboard.scoreLobby(player);
 
         } else
         {
@@ -106,6 +116,32 @@ public class GameMechanics implements Listener
 
     public void tntPlacer()
     {
+        new BukkitRunnable()
+        {
+            @Override
+            public void run()
+            {
+                if (taggersSelected != 3)
+                {
+                    Player randomPlayer = plugin.playersInGame.get(ThreadLocalRandom.current().nextInt(plugin.playersInGame.size()));
+                    PlayerManager randomPlayerManager = plugin.playerManager.get(randomPlayer.getUniqueId());
+
+                    if (!randomPlayerManager.isDead() && !randomPlayerManager.isHasTNT())
+                    {
+                        randomPlayerManager.setHasTNT(true);
+                        randomPlayer.getInventory().setHelmet(new ItemStack(Material.TNT));
+                        randomPlayer.setPlayerListName(ChatColor.RED + "" + ChatColor.BOLD + randomPlayer.getName());
+                        randomPlayer.getInventory().addItem(new ItemStack(Material.TNT));
+                        randomPlayer.sendMessage(ChatColor.RED + "" + ChatColor.BOLD + "You are IT!! Tag someone before the timer runs out!");
+                    }else
+                    {
+                        this.cancel();
+                        taggersSelected = 0;
+                    }
+
+                }
+            }
+        }.runTaskTimer(plugin, 20, 20);
 
     }
 
@@ -135,4 +171,42 @@ public class GameMechanics implements Listener
             event.setCancelled(true);
         }
     }
+
+    @EventHandler
+    public void foodLevelChange(FoodLevelChangeEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void blockPlace(BlockPlaceEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void blockBreak(BlockBreakEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void blockBurn(BlockBurnEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+
 }

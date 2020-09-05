@@ -5,4 +5,3 @@ description: TNT Tag
 main: club.trashcanolives.TNTTag.Main
 website: trashcanolives.club
 commands:
-  who:
