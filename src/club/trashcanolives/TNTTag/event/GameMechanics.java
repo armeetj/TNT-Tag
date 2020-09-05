@@ -2,13 +2,14 @@ package club.trashcanolives.TNTTag.event;
 
 import club.trashcanolives.TNTTag.Main;
 import club.trashcanolives.TNTTag.player.PlayerManager;
-import org.bukkit.ChatColor;
-import org.bukkit.Material;
-import org.bukkit.Sound;
+import org.bukkit.*;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
@@ -49,9 +50,25 @@ public class GameMechanics implements Listener
         plugin.playersLeftGame.add(player);
     }
 
-    public void tntCheck(Player player)
+    public void tntCheck()
     {
+        for (PlayerManager playerManager : plugin.playerManager.values())
+        {
+            if (playerManager.isHasTNT())
+            {
+                playerManager.setHasTNT(false);
+                playerManager.setDead(true);
 
+                Player player = Bukkit.getPlayer(playerManager.getUuid());
+                plugin.playersInGame.remove(player);
+                Location playerLocation = player.getLocation();
+                playerLocation.getWorld().createExplosion(playerLocation.getX(), playerLocation.getY(), playerLocation.getZ(), 1, false, false);
+                player.setPlayerListName(ChatColor.GRAY + player.getName());
+                player.getInventory().clear();
+                player.getInventory().setHelmet(null);
+                player.setGameMode(GameMode.SPECTATOR);
+            }
+        }
     }
 
     @EventHandler
@@ -83,6 +100,39 @@ public class GameMechanics implements Listener
                 event.setCancelled(true);
                 return;
             }
+        }
+    }
+
+
+    public void tntPlacer()
+    {
+
+    }
+
+    @EventHandler
+    public void onDrop(PlayerDropItemEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onInventory(InventoryOpenEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void damageEvent(EntityDamageEvent event)
+    {
+        if (plugin.gameManager.isStarted())
+        {
+            event.setCancelled(true);
         }
     }
 }
