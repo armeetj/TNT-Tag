@@ -1,0 +1,8 @@
+name: TNT Tag
+author: trashcanolives
+version: 1.0
+description: TNT Tag
+main: club.trashcanolives.TNTTag.Main
+website: trashcanolives.club
+commands:
+  who:
